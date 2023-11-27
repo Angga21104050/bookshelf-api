@@ -86,67 +86,31 @@ const addBookHandler = (request, h) => {
 
 const getAllBooksHandler = (request, h) => {
   let filteredBooks = books;
-  const bookshelf = [];
-
   const { name, reading, finished } = request.query;
+
   if (name !== undefined) {
     // eslint-disable-next-line max-len
     filteredBooks = filteredBooks.filter((book) => book.name.toLowerCase().includes(name.toLowerCase()));
-
-    if (filteredBooks.length === 0) {
-      const response = h.response({
-        status: 'success',
-        data: {
-          bookshelf,
-        },
-      });
-      response.code(200);
-      return response;
-    }
   }
 
   if (reading !== undefined) {
-    // eslint-disable-next-line no-const-assign
-    reading = Number(reading);
-    switch (reading) {
-      case 0:
-        filteredBooks = books.filter((book) => !book.reading);
-        break;
-      case 1:
-        filteredBooks = books.filter((book) => book.reading);
-        break;
-      default:
-        filteredBooks = books;
-    }
+    const isReading = !!Number(reading);
+    filteredBooks = filteredBooks.filter((book) => book.reading === isReading);
   }
 
   if (finished !== undefined) {
-    // eslint-disable-next-line no-const-assign
-    finished = Number(finished);
-    switch (finished) {
-      case 0:
-        filteredBooks = books.filter((book) => !book.finished === false);
-        break;
-      case 1:
-        filteredBooks = books.filter((book) => book.finished === true);
-        break;
-      default:
-        filteredBooks = books;
-    }
+    const isFinished = !!Number(finished);
+    filteredBooks = filteredBooks.filter((book) => book.finished === isFinished);
   }
-
-  filteredBooks.forEach((book) => {
-    const { id, publisher } = book;
-    // eslint-disable-next-line no-const-assign
-    ({ name } = book);
-    const newBook = { id, name, publisher };
-    bookshelf.push(newBook);
-  });
 
   const response = h.response({
     status: 'success',
     data: {
-      bookshelf,
+      books: filteredBooks.slice(0, 2).map((book) => ({
+        id: book.id,
+        name: book.name,
+        publisher: book.publisher,
+      })),
     },
   });
   response.code(200);
