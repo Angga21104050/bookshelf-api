@@ -122,15 +122,20 @@ const editBookByIdHandler = (request, h) => {
   const { bookId } = request.params;
 
   const {
-    name, year, author, summary, publisher, pageCount, readPage, reading,
+    name,
+    year,
+    author,
+    summary,
+    publisher,
+    pageCount,
+    readPage,
+    reading,
   } = request.payload;
   // eslint-disable-next-line no-unused-vars
   const updatedAt = new Date().toISOString();
 
-  // eslint-disable-next-line no-unused-vars
   const index = books.findIndex((book) => book.id === bookId);
 
-  // Client tidak melampirkan properti name pada request body
   if (!name) {
     const response = h.response({
       status: 'fail',
@@ -140,7 +145,6 @@ const editBookByIdHandler = (request, h) => {
     return response;
   }
 
-  // Client melampirkan nilai properti readPage yang lebih besar dari nilai properti pageCount
   if (readPage > pageCount) {
     const response = h.response({
       status: 'fail',
@@ -150,25 +154,33 @@ const editBookByIdHandler = (request, h) => {
     return response;
   }
 
-  // Bila id yang dilampirkan oleh client tidak ditemukan oleh server
-  books[bookId] = {
-    ...books[bookId],
-    name,
-    year,
-    author,
-    summary,
-    publisher,
-    pageCount,
-    readPage,
-    reading: !!reading,
-    updatedAt: new Date().toISOString(),
-  };
+  if (index !== -1) {
+    books[index] = {
+      ...books[index],
+      name,
+      year,
+      author,
+      summary,
+      publisher,
+      pageCount,
+      readPage,
+      reading,
+    };
+
+    const response = h.response({
+      status: 'success',
+      message: 'Buku berhasil diperbarui',
+    });
+
+    response.code(200);
+    return response;
+  }
 
   const response = h.response({
-    status: 'success',
-    message: 'Buku berhasil diperbarui',
+    status: 'fail',
+    message: 'Gagal memperbarui buku. Id tidak ditemukan',
   });
-  response.code(200);
+  response.code(404);
   return response;
 };
 
